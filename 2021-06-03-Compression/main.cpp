@@ -50,11 +50,13 @@ bool compressFile(QString originalFile, QString newFile)
 
     while (!ofile.atEnd())
     {
-        // file.read(len)file will move the cursor, i.e., mutating cursor position state of ofile,
+        // file.read(len) will move the cursor, i.e., mutating cursor position state of ofile,
         // while file.peek(len) do the same thing, but does not mutate the cursor position state
+        nfile.write(header);
+
         QByteArray buffer = ofile.read(chunkSize);
         QByteArray compressed = qCompress(buffer, 1);
-        nfile.write(header);
+
         nfile.write(compressed);
     }
 
@@ -90,19 +92,25 @@ bool decompressFile(QString originalFile, QString newFile)
     }
 
     ofile.seek(header.length());
+    // now we start with the compressed content
 
     while (!ofile.atEnd())
     {
+        // again, not moving the cursor yet
         buffer = ofile.peek(chunkSize);
         qint64 index = buffer.indexOf(header);
-        qDebug() << "Head found at" << index;
+        qDebug() << "header found at" << index;
 
         if (index > -1)
         {
             qint64 maxbytes = index;
             qInfo() << "reading: " << maxbytes;
+            // read from current position to just before the position of header
             buffer = ofile.read(maxbytes);
-            ofile.read(header.length());
+            // choice 1:
+            ofile.seek(ofile.pos() + header.length());
+            // choice 2:
+            // file.read(header.length());
         }
         else
         {

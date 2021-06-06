@@ -110,7 +110,7 @@ bool decompressFile(QString originalFile, QString newFile)
             // choice 1:
             ofile.seek(ofile.pos() + header.length());
             // choice 2:
-            // file.read(header.length());
+            // ofile.read(header.length());
         }
         else
         {
